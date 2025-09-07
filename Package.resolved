@@ -1,0 +1,24 @@
+{
+  "originHash" : "bec25bc82dbe4df82802d7f4bd4dd0fd86aec63183d14d780fde9f297a4e574e",
+  "pins" : [
+    {
+      "identity" : "clutchcorekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/engingulek/ClutchCoreKit",
+      "state" : {
+        "revision" : "906853cd938bfc59ff844a972491c651f221131a",
+        "version" : "0.2.0"
+      }
+    },
+    {
+      "identity" : "kingfisher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/onevcat/Kingfisher",
+      "state" : {
+        "revision" : "2015fda791daa72c8058619545a593bf8c1dd59f",
+        "version" : "8.5.0"
+      }
+    }
+  ],
+  "version" : 3
+}
