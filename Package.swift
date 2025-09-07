@@ -16,7 +16,7 @@ let package = Package(
     
     dependencies: [
            .package(url: "https://github.com/onevcat/Kingfisher", from: "8.5.0"),
-           .package(url: "https://github.com/engingulek/ClutchCoreKit",from: "0.2.0"),
+           .package(url: "https://github.com/engingulek/ClutchCoreKit",from: "0.2.2"),
            
         
                
