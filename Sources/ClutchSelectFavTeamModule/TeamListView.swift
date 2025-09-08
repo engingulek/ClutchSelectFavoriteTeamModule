@@ -27,7 +27,7 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                 VStack {
                     TextType(text: viewModel.textState.title, fontType: .titleSB)
                     TextType(text: viewModel.textState.subTitle, fontType: .titleTwoLight)
-                    TextType(text: "\(viewModel.selectCount)/ 3", fontType: .titleTwoNormal)
+                    TextType(text: viewModel.selectedCountText, fontType: .titleTwoNormal)
                     
                     LazyVGrid(columns: columns, spacing: 20) {
                         ForEach(viewModel.teamList, id: \.id) { team in

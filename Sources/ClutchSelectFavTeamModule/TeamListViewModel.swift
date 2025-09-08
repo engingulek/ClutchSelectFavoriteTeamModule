@@ -12,6 +12,7 @@ protocol TeamListViewModelProtocol : ObservableObject {
     var selectedTeam : Set<String> {get}
     var teamList : [Team] {get}
     var selectCount : Int {get}
+    var selectedCountText:String {get}
     var textState:TextState {get}
     var countiuneButton : (disableState:Bool,backColor:CountiuneButtonBackColor) {get}
     func onTappedTeamIcon(id:String)
@@ -24,6 +25,7 @@ class TeamListViewModel : TeamListViewModelProtocol {
     = (disableState:true,backColor:CountiuneButtonBackColor.disable)
     var selectedTeam: Set<String> = []
     var textState: TextState = TextState()
+    var selectedCountText: String = "0/2"
     
     //MARK: default list
     var teamList: [Team] = [
@@ -52,7 +54,7 @@ class TeamListViewModel : TeamListViewModelProtocol {
             
         }
         
-       
+       selectedCountText = "\(selectCount)/2"
         countiuneButton = (
             disableState:selectedTeam.count != 2,
             backColor:selectedTeam.count != 2 ? CountiuneButtonBackColor.disable : CountiuneButtonBackColor.able
