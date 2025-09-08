@@ -56,8 +56,8 @@ class TeamListViewModel : TeamListViewModelProtocol {
         
        selectedCountText = "\(selectCount)/2"
         countiuneButton = (
-            disableState:selectedTeam.count != 2,
-            backColor:selectedTeam.count != 2 ? CountiuneButtonBackColor.disable : CountiuneButtonBackColor.able
+            disableState:selectedTeam.count == 0,
+            backColor:selectedTeam.count == 0 ? CountiuneButtonBackColor.disable : CountiuneButtonBackColor.able
         )
             
         
