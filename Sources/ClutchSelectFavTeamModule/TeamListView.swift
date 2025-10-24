@@ -61,7 +61,7 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                 color: .white,
                 backColor: viewModel.countiuneButton.backColor.value,
                 fontType: .titleTwoNormal) {
-                print("devam et")
+                    viewModel.onTappedContinueButton()
             }.frame(width: .infinity)
                 .disabled(viewModel.countiuneButton.disableState)
         }.task {

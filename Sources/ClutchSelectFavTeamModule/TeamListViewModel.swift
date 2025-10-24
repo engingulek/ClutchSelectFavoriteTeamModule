@@ -17,6 +17,7 @@ protocol TeamListViewModelProtocol : ObservableObject {
     
     func onTappedTeamIcon(id:Int)
     func teamBorderColor(id:Int) -> BorderColor
+    func onTappedContinueButton()
     func taskAction() async
 }
 
@@ -77,7 +78,14 @@ class TeamListViewModel : TeamListViewModelProtocol {
         : BorderColor.notSelected
     }
     
-    
-    
-    
+    func onTappedContinueButton() {
+        Task {
+            do {
+                let userId = try await service.getUuidFromDatabase()
+                print("\(userId), \(selectedTeam)")
+            }catch{
+                print("get user id \(error.localizedDescription)")
+            }
+        }
+    }
 }
