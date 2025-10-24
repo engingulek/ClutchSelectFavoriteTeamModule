@@ -6,42 +6,49 @@
 //
 import Foundation
 
-
-
+@MainActor
 protocol TeamListViewModelProtocol : ObservableObject {
-    var selectedTeam : Set<String> {get}
-    var teamList : [Team] {get}
+    var selectedTeam : Set<Int> {get}
+    var selectFavTeams : [SelectFavTeam]{get}
     var selectCount : Int {get}
     var selectedCountText:String {get}
     var textState:TextState {get}
     var countiuneButton : (disableState:Bool,backColor:CountiuneButtonBackColor) {get}
-    func onTappedTeamIcon(id:String)
-    func teamBorderColor(id:String) -> BorderColor
+    
+    func onTappedTeamIcon(id:Int)
+    func teamBorderColor(id:Int) -> BorderColor
+    func taskAction() async
 }
 
 
 class TeamListViewModel : TeamListViewModelProtocol {
+    var service : TeamListServiceProtocol = TeamListService()
    @Published var countiuneButton: (disableState: Bool, backColor: CountiuneButtonBackColor)
     = (disableState:true,backColor:CountiuneButtonBackColor.disable)
-    var selectedTeam: Set<String> = []
+    var selectedTeam: Set<Int> = []
     var textState: TextState = TextState()
     var selectedCountText: String = "0/2"
     
-    //MARK: default list
-    var teamList: [Team] = [
-        Team(image: "https://upload.wikimedia.org/wikipedia/tr/2/2e/Liverpool_FC_logo_2024.png"),
-        Team(image: "https://upload.wikimedia.org/wikipedia/tr/thumb/9/92/Arsenal_Football_Club.png/330px-Arsenal_Football_Club.png"),
-        Team(image: "https://upload.wikimedia.org/wikipedia/tr/thumb/f/f6/Manchester_City.png/300px-Manchester_City.png"),
-        Team(image: "https://upload.wikimedia.org/wikipedia/tr/6/6d/Tottenham_Hotspur.png")
-        
-        
-    ]
+  
+    
+    @Published var selectFavTeams : [SelectFavTeam] = []
     
     
   @Published  var selectCount: Int = 0
     
+
+    func taskAction() async {
+        do {
+            let list = try await service.getSelectTeamList()
+            selectFavTeams = list
+        }catch{
+            print("view model error list fav")
+        }
+      
+    }
     
-    func onTappedTeamIcon(id: String) {
+    
+    func onTappedTeamIcon(id: Int) {
         if selectedTeam.contains(id) {
             selectedTeam.remove(id)
             
@@ -64,11 +71,13 @@ class TeamListViewModel : TeamListViewModelProtocol {
     }
     
     
-    func teamBorderColor(id: String) -> BorderColor {
+    func teamBorderColor(id: Int) -> BorderColor {
         return selectedTeam.contains(id)
         ? BorderColor.selected
         : BorderColor.notSelected
     }
+    
+    
     
     
 }

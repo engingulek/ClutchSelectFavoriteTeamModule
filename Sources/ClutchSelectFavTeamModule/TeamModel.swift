@@ -13,6 +13,17 @@ struct Team:Hashable {
     
 }
 
+struct SelectFavTeam: Codable {
+    let teamID: Int
+    let teamUrl: String
+
+    enum CodingKeys: String, CodingKey {
+        case teamID = "teamId"
+        case teamUrl
+    }
+}
+
+
 
 enum BorderColor {
     case selected

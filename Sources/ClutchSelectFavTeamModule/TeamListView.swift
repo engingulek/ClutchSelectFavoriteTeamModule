@@ -10,7 +10,7 @@ import ClutchCoreKit
 import Kingfisher
 
 
-
+@MainActor
 struct TeamListView<VM:TeamListViewModelProtocol>: View {
     @StateObject var viewModel : VM
    private let columns = [
@@ -30,9 +30,9 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                     TextType(text: viewModel.selectedCountText, fontType: .titleTwoNormal)
                     
                     LazyVGrid(columns: columns, spacing: 20) {
-                        ForEach(viewModel.teamList, id: \.id) { team in
+                        ForEach(viewModel.selectFavTeams, id: \.teamID) { team in
                             
-                            KFImage(URL(string: team.image)!)
+                            KFImage(URL(string: team.teamUrl)!)
                                 .resizable()
                             
                                 .scaledToFit()
@@ -43,10 +43,10 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                                 .cornerRadius(20)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 50)
-                                        .stroke( viewModel.teamBorderColor(id: "\(team.id)").value,
+                                        .stroke( viewModel.teamBorderColor(id: team.teamID).value,
                                                  lineWidth: 2)
                                 ).onTapGesture {
-                                    viewModel.onTappedTeamIcon(id: "\(team.id)")
+                                    viewModel.onTappedTeamIcon(id: team.teamID)
                                  
                                 }
                             
@@ -64,6 +64,8 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                 print("devam et")
             }.frame(width: .infinity)
                 .disabled(viewModel.countiuneButton.disableState)
+        }.task {
+           await viewModel.taskAction()
         }
         
     }

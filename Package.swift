@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "ClutchSelectFavTeamModule",
     defaultLocalization: "en",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v18)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -17,7 +17,8 @@ let package = Package(
     dependencies: [
            .package(url: "https://github.com/onevcat/Kingfisher", from: "8.5.0"),
            .package(url: "https://github.com/engingulek/ClutchCoreKit",from: "0.2.2"),
-           .package(url: "https://github.com/engingulek/ClutchModularProtocols",from: "0.0.3")
+           .package(url: "https://github.com/engingulek/ClutchModularProtocols",from: "0.0.3"),
+           .package(url: "https://github.com/engingulek/ClutchManagerKits", branch: "develop")
            
         
                
@@ -31,6 +32,7 @@ let package = Package(
                 .product(name: "ClutchCoreKit", package: "ClutchCoreKit"),
                 .product(name: "Kingfisher", package: "Kingfisher"),
                 .product(name: "ClutchModularProtocols", package: "ClutchModularProtocols"),
+                .product(name: "ClutchManagerKits", package: "ClutchManagerKits")
             ]
         
         ),

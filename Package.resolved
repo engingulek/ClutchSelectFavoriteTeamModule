@@ -1,6 +1,15 @@
 {
-  "originHash" : "d466a1a06a1690801e3d966da2e84d9c0926c959b889ab2b8ae8d7dcd98c28c1",
+  "originHash" : "82667dfe26520941df7a022a3198a1ab6476e6c9ea6621c5c98e98da1a1aceca",
   "pins" : [
+    {
+      "identity" : "alamofire",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Alamofire/Alamofire.git",
+      "state" : {
+        "revision" : "513364f870f6bfc468f9d2ff0a95caccc10044c5",
+        "version" : "5.10.2"
+      }
+    },
     {
       "identity" : "clutchcorekit",
       "kind" : "remoteSourceControl",
@@ -8,6 +17,15 @@
       "state" : {
         "revision" : "71f5613deb6132bce059fa2a471f7f21bdbee34a",
         "version" : "0.2.2"
+      }
+    },
+    {
+      "identity" : "clutchmanagerkits",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/engingulek/ClutchManagerKits",
+      "state" : {
+        "branch" : "develop",
+        "revision" : "7c280c3da2f81c9314dbfc5ea928b93ba4101e09"
       }
     },
     {
