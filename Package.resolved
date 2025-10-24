@@ -1,5 +1,5 @@
 {
-  "originHash" : "82667dfe26520941df7a022a3198a1ab6476e6c9ea6621c5c98e98da1a1aceca",
+  "originHash" : "061217e55552b064219ad33095b291f2f2f908338da868a9049ef1bdb44fb68f",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -25,7 +25,7 @@
       "location" : "https://github.com/engingulek/ClutchManagerKits",
       "state" : {
         "branch" : "develop",
-        "revision" : "7c280c3da2f81c9314dbfc5ea928b93ba4101e09"
+        "revision" : "60442bcb73727a6a5b77fcdaeaaf7bf4094ca438"
       }
     },
     {
