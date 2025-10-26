@@ -66,6 +66,10 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                 .disabled(viewModel.countiuneButton.disableState)
         }.task {
            await viewModel.taskAction()
+        } .alert(viewModel.alerTitle, isPresented: $viewModel.showAlertState) {
+         
+        } message: {
+            Text(viewModel.showAlertMessage)
         }
         
     }

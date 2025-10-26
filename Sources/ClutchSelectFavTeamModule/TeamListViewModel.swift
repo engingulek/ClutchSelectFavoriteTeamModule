@@ -5,7 +5,7 @@
 //  Created by Engin Gülek on 7.09.2025.
 //
 import Foundation
-
+import ClutchCoreKit
 @MainActor
 protocol TeamListViewModelProtocol : ObservableObject {
     var selectedTeam : Set<Int> {get}
@@ -14,7 +14,10 @@ protocol TeamListViewModelProtocol : ObservableObject {
     var selectedCountText:String {get}
     var textState:TextState {get}
     var countiuneButton : (disableState:Bool,backColor:CountiuneButtonBackColor) {get}
-    
+    var showAlertState:Bool {get set}
+    var showAlertMessage:String {get}
+    var alerTitle:String {get}
+    var buttonText:String {get}
     func onTappedTeamIcon(id:Int)
     func teamBorderColor(id:Int) -> BorderColor
     func onTappedContinueButton()
@@ -30,8 +33,11 @@ class TeamListViewModel : TeamListViewModelProtocol {
     var selectedTeam: Set<Int> = []
     var textState: TextState = TextState()
     var selectedCountText: String = "0/2"
+    @Published var showAlertState:Bool  = false
+    @Published var showAlertMessage:String  = ""
     private var uuid:String? = nil
-    
+    var buttonText: String = LocalizableTheme.ok.localized
+    var alerTitle: String = LocalizableTheme.warning.localized
   
     
     @Published var selectFavTeams : [SelectFavTeam] = []
@@ -46,18 +52,24 @@ class TeamListViewModel : TeamListViewModelProtocol {
                  uuid = try await service.getUuidFromDatabase()
                
             }catch{
-                print("get user id \(error.localizedDescription)")
+               
+                createAlertMessage()
             }
         }
     }
     
+    
+    private func createAlertMessage() {
+        showAlertState = true
+        showAlertMessage = LocalizableTheme.unExpectedError.localized
+    }
     
    private func fetchList() async {
         do {
             let list = try await service.getSelectTeamList()
             selectFavTeams = list
         }catch{
-            print("view model error list fav")
+            createAlertMessage()
         }
     }
     
@@ -105,7 +117,7 @@ class TeamListViewModel : TeamListViewModelProtocol {
                 guard let uuid else {return}
               try await service.addFavTeam(uuid: uuid, teams: selectFavTeams.count == 0 ? [] : Array(selectedTeam))
             }catch{
-                print(" add fav team error \(error.localizedDescription)")
+                createAlertMessage()
             }
         }
     }

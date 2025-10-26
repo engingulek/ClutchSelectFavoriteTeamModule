@@ -42,7 +42,6 @@ final class TeamListService : TeamListServiceProtocol, @unchecked Sendable {
     func addFavTeam(uuid:String,teams:[Int]) async throws {
         do{
             let response = try await networkManager.execute(AddFavTeamsRequest(uuid: uuid, teams: teams))
-            print("Add fav team response \(response.message)")
         }catch{
             throw error
         }
