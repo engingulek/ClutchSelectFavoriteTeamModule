@@ -19,6 +19,7 @@ protocol TeamListViewModelProtocol : ObservableObject {
     func teamBorderColor(id:Int) -> BorderColor
     func onTappedContinueButton()
     func taskAction() async
+    
 }
 
 
@@ -29,6 +30,7 @@ class TeamListViewModel : TeamListViewModelProtocol {
     var selectedTeam: Set<Int> = []
     var textState: TextState = TextState()
     var selectedCountText: String = "0/2"
+    private var uuid:String? = nil
     
   
     
@@ -37,14 +39,33 @@ class TeamListViewModel : TeamListViewModelProtocol {
     
   @Published  var selectCount: Int = 0
     
-
-    func taskAction() async {
+    
+   private func getUserId() async {
+        Task {
+            do {
+                 uuid = try await service.getUuidFromDatabase()
+               
+            }catch{
+                print("get user id \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    
+   private func fetchList() async {
         do {
             let list = try await service.getSelectTeamList()
             selectFavTeams = list
         }catch{
             print("view model error list fav")
         }
+    }
+    
+
+    func taskAction() async {
+        await getUserId()
+        await fetchList()
+        
       
     }
     
@@ -81,11 +102,13 @@ class TeamListViewModel : TeamListViewModelProtocol {
     func onTappedContinueButton() {
         Task {
             do {
-                let userId = try await service.getUuidFromDatabase()
-                print("\(userId), \(selectedTeam)")
+                guard let uuid else {return}
+              try await service.addFavTeam(uuid: uuid, teams: selectFavTeams.count == 0 ? [] : Array(selectedTeam))
             }catch{
-                print("get user id \(error.localizedDescription)")
+                print(" add fav team error \(error.localizedDescription)")
             }
         }
     }
+    
+    
 }

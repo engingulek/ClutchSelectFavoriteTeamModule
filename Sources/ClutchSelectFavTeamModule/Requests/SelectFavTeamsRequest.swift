@@ -15,6 +15,5 @@ struct SelectFavTeamsRequest: NetworkRequest {
     var headers: [String: String]? {
         ["Authorization": "Bearer 123456"]
     }
-    // Parameters yok:
     var parameters: [String : Any]? { nil }
 }
