@@ -6,130 +6,123 @@
 //
 import Foundation
 import ClutchCoreKit
+
 @MainActor
-protocol TeamListViewModelProtocol : ObservableObject {
-    var selectedTeam : Set<Int> {get}
-    var selectFavTeams : [SelectFavTeam]{get}
-    var selectCount : Int {get}
-    var selectedCountText:String {get}
-    var textState:TextState {get}
-    var countiuneButton : (disableState:Bool,backColor:CountiuneButtonBackColor) {get}
-    var showAlertState:Bool {get set}
-    var showAlertMessage:String {get}
-    var alerTitle:String {get}
-    var buttonText:String {get}
-    var teamsFetchError:Bool {get}
-    var loadingAction:Bool {get}
-    func onTappedTeamIcon(id:Int)
-    func teamBorderColor(id:Int) -> BorderColor
-    func onTappedContinueButton()
-    func taskAction() async
+protocol TeamListViewModelProtocol: ObservableObject {
+    var selectedTeamIDs: Set<Int> { get }
+    var favoriteTeams: [SelectFavTeam] { get }
+    var selectedCountText: String { get }
+    var textState: TextState { get }
+    var continueButtonState: (isDisabled: Bool, background: CountiuneButtonBackColor) { get }
+    var showAlert: Bool { get set }
+    var alertMessage: String { get }
+
+    var teamFetchError: (state:Bool, message:String) { get }
+    var isLoading: Bool { get }
     
+    var toHomePage: (() -> Void)? { get set }
+    
+    func toggleTeamSelection(id: Int)
+    func borderColor(for id: Int) -> BorderColor
+    func tapContinue()
+    func task() async
+  
 }
 
+final class TeamListViewModel: TeamListViewModelProtocol {
+    
+    // MARK: - Dependencies
+    private let service: TeamListServiceProtocol
+    
+    // MARK: - Published Properties
+    @Published var continueButtonState: (
+        isDisabled: Bool,
+        background: CountiuneButtonBackColor) = (true, .disable)
+    @Published var showAlert: Bool = false
+    @Published var alertMessage: String = ""
+    @Published var favoriteTeams: [SelectFavTeam] = []
+    @Published var teamFetchError: (state:Bool, message:String) = (false,"")
+    @Published var isLoading: Bool = true
+    @Published private(set) var selectedTeamIDs: Set<Int> = []
+    @Published private(set) var selectedCount: Int = 0
+    @Published private(set) var selectedCountText: String = "0/2"
 
-class TeamListViewModel : TeamListViewModelProtocol {
-    var service : TeamListServiceProtocol = TeamListService()
-   @Published var countiuneButton: (disableState: Bool, backColor: CountiuneButtonBackColor)
-    = (disableState:true,backColor:CountiuneButtonBackColor.disable)
-    var selectedTeam: Set<Int> = []
+    // MARK: - Other Properties
+    private var uuid: String?
     var textState: TextState = TextState()
-    var selectedCountText: String = "0/2"
-    @Published var showAlertState:Bool  = false
-    @Published var showAlertMessage:String  = ""
-    @Published var teamsFetchError: Bool = false
-    @Published var loadingAction: Bool = true
-    private var uuid:String? = nil
-    var buttonText: String = LocalizableTheme.ok.localized
-    var alerTitle: String = LocalizableTheme.warning.localized
-  
-    
-    @Published var selectFavTeams : [SelectFavTeam] = []
-    
-    
-  @Published  var selectCount: Int = 0
-    
-    
-   private func getUserId() async {
-        Task {
-            do {
-                 uuid = try await service.getUuidFromDatabase()
-               
-            }catch{
-               
-                createAlertMessage()
-            }
-        }
+    var toHomePage: (() -> Void)?
+    // MARK: - Init
+    init(service: TeamListServiceProtocol = TeamListService()) {
+        self.service = service
     }
-    
-    
-    private func createAlertMessage() {
-        showAlertState = true
-        showAlertMessage = LocalizableTheme.unExpectedError.localized
-    }
-    
-   private func fetchList() async {
-      
-        do {
-            let list = try await service.getSelectTeamList()
-            selectFavTeams = list
-            loadingAction = false
-        }catch{
-           teamsFetchError = true
-           
-        }
-       loadingAction = false
-    }
-    
 
-    func taskAction() async {
-        await fetchList()
-        await getUserId()
-     
-        
-      
+    // MARK: - Lifecycle Actions
+    func task() async {
+        await fetchTeams()
+        await fetchUserID()
     }
-    
-    
-    func onTappedTeamIcon(id: Int) {
-        if selectedTeam.contains(id) {
-            selectedTeam.remove(id)
-            
-            selectCount -= 1
-        }else{
-            if selectedTeam.count < 2 {
-                selectedTeam.insert(id)
-                selectCount += 1
-            }
-            
+
+    // MARK: - User Actions
+    func toggleTeamSelection(id: Int) {
+        if selectedTeamIDs.contains(id) {
+            selectedTeamIDs.remove(id)
+            selectedCount -= 1
+        } else if selectedTeamIDs.count < 2 {
+            selectedTeamIDs.insert(id)
+            selectedCount += 1
         }
-        
-       selectedCountText = "\(selectCount)/2"
-        countiuneButton = (
-            disableState:selectedTeam.count == 0,
-            backColor:selectedTeam.count == 0 ? CountiuneButtonBackColor.disable : CountiuneButtonBackColor.able
-        )
-            
-        
+        updateSelectionUI()
     }
     
-    
-    func teamBorderColor(id: Int) -> BorderColor {
-        return selectedTeam.contains(id)
-        ? BorderColor.selected
-        : BorderColor.notSelected
-    }
-    
-    func onTappedContinueButton() {
+    func tapContinue() {
         Task {
+            guard let uuid else { return }
             do {
-                guard let uuid else {return}
-              try await service.addFavTeam(uuid: uuid, teams: selectFavTeams.count == 0 ? [] : Array(selectedTeam))
-            }catch{
-                createAlertMessage()
+                let selected = Array(selectedTeamIDs)
+                try await service.addFavTeam(uuid: uuid, teams: selected)
+                toHomePage?()
+            } catch {
+                showAlert(with: LocalizableTheme.unExpectedError.localized)
             }
         }
     }
+
+    func borderColor(for id: Int) -> BorderColor {
+        selectedTeamIDs.contains(id) ? .selected : .notSelected
+    }
     
+ 
+}
+
+extension TeamListViewModel {
+    // MARK: - Private Helpers
+    private func updateSelectionUI() {
+        selectedCountText = "\(selectedCount)/2"
+        continueButtonState = (
+            isDisabled: selectedTeamIDs.count < 2,
+            background: selectedTeamIDs.count < 2 ? .disable : .able
+        )
+    }
     
+    private func fetchUserID() async {
+        do {
+            uuid = try await service.getUuidFromDatabase()
+        } catch {
+            showAlert(with: LocalizableTheme.unExpectedError.localized)
+        }
+    }
+    
+    private func fetchTeams() async {
+        do {
+            favoriteTeams = try await service.getSelectTeamList()
+        } catch {
+            teamFetchError = (state:true,message:LocalizableTheme.unExpectedError.localized)
+        }
+        isLoading = false
+    }
+
+    private func showAlert(with message: String) {
+        alertMessage = message
+        showAlert = true
+    }
 }

@@ -1,106 +1,117 @@
 
-
-
 import Testing
 @testable import ClutchSelectFavTeamModule
 import ClutchCoreKit
 
-@Suite("Test For Select Fav Template ")
+@Suite("Test For Select Favorite Team Module")
+
+@MainActor
 class ClutchSelectFavTeamModuleTests {
-    var viewModel : (any TeamListViewModelProtocol)!
+    private var service: MockTeamListService!
+    private var viewModel: TeamListViewModel!
     
     init() {
-        self.viewModel = TeamListViewModel()
+        service = .init()
+        viewModel = .init(service: service)
     }
     
-    @Test("Favorite Team Selection Page title and subtitle verification")
-    func testTitleAndSubTitleCheck(){
-        let expectedTitle = LocalizableTheme.selectFavTeamTitle.localized
-        let expectedSubTitle = LocalizableTheme.selectFavTeamSubTitle.localized
-        
-        
-        #expect(expectedTitle == viewModel.textState.title)
-        #expect(expectedSubTitle == viewModel.textState.subTitle)
-        
+    @Test("isLoading should be true on start and false after fetching teams")
+    func testLoadingStateDuringFetch() async throws {
+        #expect(viewModel.isLoading == true)
+        service.mockTeamList = [
+            .init(teamID: 1, teamUrl: "team url"),
+            .init(teamID: 2, teamUrl: "team url")
+        ]
+        await viewModel.task()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        #expect(viewModel.isLoading == false)
     }
     
-    
-    @Test("Favorite Team Selection Page initial selectedCount should be 0")
-    func testInitialSelectedCountIsZero() {
-        let expectedCount = 0
-        
-        #expect(expectedCount == viewModel.selectCount)
+    @Test("teamFetchError should be true if service returns error")
+    func testTeamFetchError() async throws {
+        #expect(viewModel.teamFetchError.state == false)
+        #expect(viewModel.teamFetchError.message == "")
+        service.teamListError = true
+        await viewModel.task()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        #expect(viewModel.teamFetchError.state == true)
+        #expect(viewModel.teamFetchError.message == LocalizableTheme.unExpectedError.localized)
     }
     
-    @Test("SelectedCount should increment when a team is selected")
-    func testSelectedCountIncrements() {
-        let expectedSelectedCountText = "1/2"
-        
-        let testID = "testId"
-        
-        viewModel.onTappedTeamIcon(id: testID)
-        
-        #expect(expectedSelectedCountText == viewModel.selectedCountText)
-        
-        
+    @Test("Continue button should be disabled when page opens")
+    func testContinueButtonInitialState() async throws {
+        service.mockTeamList = [
+            .init(teamID: 1, teamUrl: "team url"),
+            .init(teamID: 2, teamUrl: "team url")
+        ]
+        await viewModel.task()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        #expect(viewModel.continueButtonState.isDisabled == true)
+        #expect(viewModel.continueButtonState.background == .disable)
     }
     
-    
-    @Test("SelectedCount should decrease when a team is selected")
-    func testSelectedCountDecrease() {
-        let expectedSelectedCountText = "0/2"
-        
-        let testID = "testId"
-        // add
-        viewModel.onTappedTeamIcon(id: testID)
-        //remove
-        viewModel.onTappedTeamIcon(id: testID)
-        
-        #expect(expectedSelectedCountText == viewModel.selectedCountText)
-        
-        
+    @Test("Continue button remains disabled if only one team is selected")
+    func testSingleTeamSelection() async throws {
+        service.mockTeamList = [
+            .init(teamID: 1, teamUrl: "team url"),
+            .init(teamID: 2, teamUrl: "team url")
+        ]
+        await viewModel.task()
+        viewModel.toggleTeamSelection(id: 1)
+        try await Task.sleep(nanoseconds: 200_000_000)
+        #expect(viewModel.continueButtonState.isDisabled == true)
+        #expect(viewModel.continueButtonState.background == .disable)
     }
     
-    @Test("Selected teams should have border ")
-    func testSelectedTeamBorder() {
-        let expectedSelectedTeamBorder : BorderColor = .selected
-        let testID = "testId"
-        viewModel.onTappedTeamIcon(id: testID)
-        let border = viewModel.teamBorderColor(id: testID)
-        #expect(expectedSelectedTeamBorder == border)
+    @Test("Continue button should be enabled when two teams are selected")
+    func testTwoTeamSelection() async throws {
+        service.mockTeamList = [
+            .init(teamID: 1, teamUrl: "team url"),
+            .init(teamID: 2, teamUrl: "team url")
+        ]
+        await viewModel.task()
+        viewModel.toggleTeamSelection(id: 1)
+        viewModel.toggleTeamSelection(id: 2)
+        try await Task.sleep(nanoseconds: 200_000_000)
+        #expect(viewModel.continueButtonState.isDisabled == false)
+        #expect(viewModel.continueButtonState.background == .able)
     }
     
-    
-    @Test("Continue button should be disabled initially")
-    func testContinueButtonInitiallyDisabled() {
-        let expectedCountiuneButton : (disableState:Bool,backColor:CountiuneButtonBackColor)
-        = (disableState:true,backColor:CountiuneButtonBackColor.disable)
-        
-        let button = viewModel.countiuneButton
-        
-        #expect(button.disableState == expectedCountiuneButton.disableState)
-        #expect(button.backColor == expectedCountiuneButton.backColor)
+    @Test("Continue button should be disabled after deselecting one team")
+    func testTwoTeamsThenRemoveOne() async throws {
+        service.mockTeamList = [
+            .init(teamID: 1, teamUrl: "team url"),
+            .init(teamID: 2, teamUrl: "team url")
+        ]
+        await viewModel.task()
+        viewModel.toggleTeamSelection(id: 1)
+        viewModel.toggleTeamSelection(id: 2)
+        viewModel.toggleTeamSelection(id: 1)
+        try await Task.sleep(nanoseconds: 200_000_000)
+        #expect(viewModel.continueButtonState.isDisabled == true)
+        #expect(viewModel.continueButtonState.background == .disable)
     }
     
-    @Test("Continue button should be enabled only when selectedCount is 2")
-    func testContinueButtonEnablesOnSingleSelection() {
-        let expectedCountiuneButton : (disableState:Bool,backColor:CountiuneButtonBackColor)
-        = (disableState:false,backColor:CountiuneButtonBackColor.able)
-        let testID = "testId"
-        let testId1 = "testid 1"
-        
-        viewModel.onTappedTeamIcon(id: testID)
-        viewModel.onTappedTeamIcon(id: testId1)
-        let button = viewModel.countiuneButton
-        
-        #expect(button.disableState == expectedCountiuneButton.disableState)
-        #expect(button.backColor == expectedCountiuneButton.backColor)
-        
-        
+    @Test("Show alert when UUID error occurs")
+    func testUuidErrorShowsAlert() async throws {
+        #expect(viewModel.showAlert == false)
+        #expect(viewModel.alertMessage == "")
+        service.uuidError = true
+        await viewModel.task()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        #expect(viewModel.showAlert == true)
+        #expect(viewModel.alertMessage == LocalizableTheme.unExpectedError.localized)
     }
     
-    
-    
-        
-    
+    @Test("Show alert when tapping continue fails")
+    func testContinueTapReturnsError() async throws {
+        #expect(viewModel.showAlert == false)
+        #expect(viewModel.alertMessage == "")
+        service.addFavTeamError = true
+        await viewModel.task()
+        viewModel.tapContinue()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        #expect(viewModel.showAlert == true)
+        #expect(viewModel.alertMessage == LocalizableTheme.unExpectedError.localized)
+    }
 }

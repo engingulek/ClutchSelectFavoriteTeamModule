@@ -18,7 +18,8 @@ let package = Package(
            .package(url: "https://github.com/onevcat/Kingfisher", from: "8.5.0"),
            .package(url: "https://github.com/engingulek/ClutchCoreKit",branch: "master"),
            .package(url: "https://github.com/engingulek/ClutchModularProtocols",from: "0.0.3"),
-           .package(url: "https://github.com/engingulek/ClutchManagerKits", branch: "develop")
+           .package(url: "https://github.com/engingulek/ClutchManagerKits", branch: "develop"),
+           .package(url: "https://github.com/engingulek/ClutchNavigationKit",branch: "develop"),
            
         
                
@@ -32,7 +33,8 @@ let package = Package(
                 .product(name: "ClutchCoreKit", package: "ClutchCoreKit"),
                 .product(name: "Kingfisher", package: "Kingfisher"),
                 .product(name: "ClutchModularProtocols", package: "ClutchModularProtocols"),
-                .product(name: "ClutchManagerKits", package: "ClutchManagerKits")
+                .product(name: "ClutchManagerKits", package: "ClutchManagerKits"),
+                .product(name: "ClutchNavigationKit", package: "ClutchNavigationKit")
             ]
         
         ),

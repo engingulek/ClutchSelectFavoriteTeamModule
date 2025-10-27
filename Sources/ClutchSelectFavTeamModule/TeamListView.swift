@@ -8,28 +8,33 @@
 import SwiftUI
 import ClutchCoreKit
 import Kingfisher
-
+import ClutchNavigationKit
 
 @MainActor
-struct TeamListView<VM:TeamListViewModelProtocol>: View {
-    @StateObject var viewModel : VM
-   private let columns = [
+struct TeamListView<VM: TeamListViewModelProtocol>: View {
+    @StateObject var viewModel: VM
+    @EnvironmentObject private var navigation:Navigation
+    private let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
         GridItem(.flexible()),
     ]
     
-
-    
     var body: some View {
         VStack {
-            if viewModel.teamsFetchError {
+            if viewModel.isLoading{
+                VStack {
+                    ProgressView("Yükleniyor...")
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .padding()
+                   
+                }
+            }else {
+                if viewModel.teamFetchError.state  {
+                    //TODO: move to core kit
+                  
+                } else {
                     VStack {
-                        errorMessage
-                    }
-                }else{
-                    VStack {
-                       
                         ScrollView {
                             VStack {
                                 TextType(text: viewModel.textState.title, fontType: .titleSB)
@@ -37,12 +42,13 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                                 TextType(text: viewModel.selectedCountText, fontType: .titleTwoNormal)
                                 
                                 LazyVGrid(columns: columns, spacing: 20) {
-                                    ForEach(viewModel.selectFavTeams, id: \.teamID) { team in
+                                    ForEach(viewModel.favoriteTeams, id: \.teamID) { team in
                                         TeamView(
-                                            team: team, borderColor:
-                                                viewModel.teamBorderColor(id: team.teamID),
-                                            onTapGesture: viewModel.onTappedTeamIcon(id: team.teamID))
-                                        
+                                            team: team,
+                                            borderColor: viewModel.borderColor(for: team.teamID)
+                                        ) {
+                                            viewModel.toggleTeamSelection(id: team.teamID)
+                                        }
                                     }
                                 }
                                 .padding()
@@ -52,33 +58,43 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                         BaseButton(
                             text: viewModel.textState.countiuneButton,
                             color: .white,
-                            backColor: viewModel.countiuneButton.backColor.value,
-                            fontType: .titleTwoNormal) {
-                                viewModel.onTappedContinueButton()
-                        }.frame(width: .infinity)
-                            .disabled(viewModel.countiuneButton.disableState)
+                            backColor: viewModel.continueButtonState.background.value,
+                            fontType: .titleTwoNormal
+                        ) {
+                            viewModel.tapContinue()
+                        }
+                        .frame(width: .infinity)
+                        .disabled(viewModel.continueButtonState.isDisabled)
                     }
                 }
-            
-           
-            
-        }.task {
-           await viewModel.taskAction()
-        }.simpleAlert(
-            isPresented: $viewModel.showAlertState,
-            title: viewModel.alerTitle,
-            message: viewModel.showAlertMessage)
+            }
+        }
+        .onAppear {
+            viewModel.toHomePage = {
+                navigation.push(.tabView)
+            }
+        }
+        .task {
+            await viewModel.task()
+        }
+        .simpleAlert(
+            isPresented: $viewModel.showAlert,
+            title: viewModel.textState.alertTitle,
+            message: viewModel.alertMessage
+        )
     }
     
-    
-    var errorMessage: some View {
-        Text(viewModel.showAlertMessage)
+    private var errorText: some View {
+        Text(viewModel.teamFetchError.message)
             .font(.title)
-            .foregroundStyle(.black)
+            .foregroundColor(.red)
+            .fontWeight(.semibold)
     }
 }
+
 
 #Preview {
     TeamListView(viewModel:TeamListViewModel())
 }
+
 

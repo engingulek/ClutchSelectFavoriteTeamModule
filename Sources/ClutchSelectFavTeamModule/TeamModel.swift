@@ -60,4 +60,6 @@ struct TextState {
     let title:String = LocalizableTheme.selectFavTeamTitle.localized
     let subTitle:String = LocalizableTheme.selectFavTeamSubTitle.localized
     let countiuneButton:String = LocalizableTheme.countiune.localized
+    var buttonText: String = LocalizableTheme.ok.localized
+    var alertTitle: String = LocalizableTheme.warning.localized
 }

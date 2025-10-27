@@ -11,7 +11,7 @@ import Kingfisher
 struct TeamView: View {
     let team : SelectFavTeam
     let borderColor : BorderColor
-    let onTapGesture :()
+    let onTapGesture :() -> Void
     var body: some View {
         KFImage(URL(string: team.teamUrl)!)
             .resizable()
@@ -27,9 +27,7 @@ struct TeamView: View {
                     .stroke( borderColor.value,
                              lineWidth: 2)
             ).onTapGesture {
-                onTapGesture
-               
-             
+                onTapGesture()
             }
     }
 }
