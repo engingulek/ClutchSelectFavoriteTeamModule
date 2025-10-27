@@ -76,14 +76,15 @@ class TeamListViewModel : TeamListViewModelProtocol {
             loadingAction = false
         }catch{
            teamsFetchError = true
-            loadingAction = false
+           
         }
+       loadingAction = false
     }
     
 
     func taskAction() async {
         await fetchList()
-      //  await getUserId()
+        await getUserId()
      
         
       

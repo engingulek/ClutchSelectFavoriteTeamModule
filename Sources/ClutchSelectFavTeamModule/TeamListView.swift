@@ -23,16 +23,13 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
     
     var body: some View {
         VStack {
-            if viewModel.loadingAction {
-                ProgressView("Loading...")
-                                  .progressViewStyle(CircularProgressViewStyle())
-            }else{
-                if viewModel.teamsFetchError {
+            if viewModel.teamsFetchError {
                     VStack {
                         errorMessage
                     }
                 }else{
                     VStack {
+                       
                         ScrollView {
                             VStack {
                                 TextType(text: viewModel.textState.title, fontType: .titleSB)
@@ -62,7 +59,7 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
                             .disabled(viewModel.countiuneButton.disableState)
                     }
                 }
-            }
+            
            
             
         }.task {
