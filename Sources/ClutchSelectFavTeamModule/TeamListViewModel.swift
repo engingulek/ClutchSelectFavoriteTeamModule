@@ -18,6 +18,8 @@ protocol TeamListViewModelProtocol : ObservableObject {
     var showAlertMessage:String {get}
     var alerTitle:String {get}
     var buttonText:String {get}
+    var teamsFetchError:Bool {get}
+    var loadingAction:Bool {get}
     func onTappedTeamIcon(id:Int)
     func teamBorderColor(id:Int) -> BorderColor
     func onTappedContinueButton()
@@ -35,6 +37,8 @@ class TeamListViewModel : TeamListViewModelProtocol {
     var selectedCountText: String = "0/2"
     @Published var showAlertState:Bool  = false
     @Published var showAlertMessage:String  = ""
+    @Published var teamsFetchError: Bool = false
+    @Published var loadingAction: Bool = true
     private var uuid:String? = nil
     var buttonText: String = LocalizableTheme.ok.localized
     var alerTitle: String = LocalizableTheme.warning.localized
@@ -65,18 +69,22 @@ class TeamListViewModel : TeamListViewModelProtocol {
     }
     
    private func fetchList() async {
+      
         do {
             let list = try await service.getSelectTeamList()
             selectFavTeams = list
+            loadingAction = false
         }catch{
-            createAlertMessage()
+           teamsFetchError = true
+            loadingAction = false
         }
     }
     
 
     func taskAction() async {
-        await getUserId()
         await fetchList()
+      //  await getUserId()
+     
         
       
     }

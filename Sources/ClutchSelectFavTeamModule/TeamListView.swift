@@ -23,55 +23,61 @@ struct TeamListView<VM:TeamListViewModelProtocol>: View {
     
     var body: some View {
         VStack {
-            ScrollView {
-                VStack {
-                    TextType(text: viewModel.textState.title, fontType: .titleSB)
-                    TextType(text: viewModel.textState.subTitle, fontType: .titleTwoLight)
-                    TextType(text: viewModel.selectedCountText, fontType: .titleTwoNormal)
-                    
-                    LazyVGrid(columns: columns, spacing: 20) {
-                        ForEach(viewModel.selectFavTeams, id: \.teamID) { team in
-                            
-                            KFImage(URL(string: team.teamUrl)!)
-                                .resizable()
-                            
-                                .scaledToFit()
-                            
-                                .frame(width: 75, height: 75)
-                            
-                                .padding(10)
-                                .cornerRadius(20)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 50)
-                                        .stroke( viewModel.teamBorderColor(id: team.teamID).value,
-                                                 lineWidth: 2)
-                                ).onTapGesture {
-                                    viewModel.onTappedTeamIcon(id: team.teamID)
-                                 
-                                }
-                            
-                        }
+            if viewModel.loadingAction {
+                ProgressView("Loading...")
+                                  .progressViewStyle(CircularProgressViewStyle())
+            }else{
+                if viewModel.teamsFetchError {
+                    VStack {
+                        errorMessage
                     }
-                    .padding()
+                }else{
+                    VStack {
+                        ScrollView {
+                            VStack {
+                                TextType(text: viewModel.textState.title, fontType: .titleSB)
+                                TextType(text: viewModel.textState.subTitle, fontType: .titleTwoLight)
+                                TextType(text: viewModel.selectedCountText, fontType: .titleTwoNormal)
+                                
+                                LazyVGrid(columns: columns, spacing: 20) {
+                                    ForEach(viewModel.selectFavTeams, id: \.teamID) { team in
+                                        TeamView(
+                                            team: team, borderColor:
+                                                viewModel.teamBorderColor(id: team.teamID),
+                                            onTapGesture: viewModel.onTappedTeamIcon(id: team.teamID))
+                                        
+                                    }
+                                }
+                                .padding()
+                            }
+                        }
+                        
+                        BaseButton(
+                            text: viewModel.textState.countiuneButton,
+                            color: .white,
+                            backColor: viewModel.countiuneButton.backColor.value,
+                            fontType: .titleTwoNormal) {
+                                viewModel.onTappedContinueButton()
+                        }.frame(width: .infinity)
+                            .disabled(viewModel.countiuneButton.disableState)
+                    }
                 }
             }
+           
             
-            BaseButton(
-                text: viewModel.textState.countiuneButton,
-                color: .white,
-                backColor: viewModel.countiuneButton.backColor.value,
-                fontType: .titleTwoNormal) {
-                    viewModel.onTappedContinueButton()
-            }.frame(width: .infinity)
-                .disabled(viewModel.countiuneButton.disableState)
         }.task {
            await viewModel.taskAction()
-        } .alert(viewModel.alerTitle, isPresented: $viewModel.showAlertState) {
-         
-        } message: {
-            Text(viewModel.showAlertMessage)
-        }
-        
+        }.simpleAlert(
+            isPresented: $viewModel.showAlertState,
+            title: viewModel.alerTitle,
+            message: viewModel.showAlertMessage)
+    }
+    
+    
+    var errorMessage: some View {
+        Text(viewModel.showAlertMessage)
+            .font(.title)
+            .foregroundStyle(.black)
     }
 }
 
